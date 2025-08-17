@@ -3,14 +3,14 @@ import json
 import os
 from datetime import datetime, timedelta
 
-# 🔐 À remplacer par votre clé personnelle
+# À remplacer par votre clé personnelle
 API_KEY = "da0bfced722f447e9e508973412da9cb"
 
 NEWS_SOURCES = "financial-post, the-wall-street-journal, bloomberg, the-washington-post, australian-financial-review, bbc-news, cnn"
 NEWS_FOLDER = "news_data"
 os.makedirs(NEWS_FOLDER, exist_ok=True)
 
-# 🔁 Correspondance nom complet → ticker boursier
+# Correspondance nom complet → ticker boursier
 company_map = {
     "Apple": "AAPL",
     "Microsoft": "MSFT",
@@ -81,12 +81,12 @@ def get_news_by_date(company_name, ticker, days=10):
                     added += 1
 
         save_news(ticker, news_dict)
-        print(f"✅ {added} articles ajoutés pour {company_name} ({ticker}).")
+        print(f"{added} articles ajoutés pour {company_name} ({ticker}).")
     else:
-        print(f"❌ Erreur API pour {company_name} : {response.status_code}")
+        print(f"Erreur API pour {company_name} : {response.status_code}")
 
 
-# 🔁 Boucle principale
+# Boucle principale
 if __name__ == "__main__":
     for name, ticker in company_map.items():
         get_news_by_date(name, ticker)

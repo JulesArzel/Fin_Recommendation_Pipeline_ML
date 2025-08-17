@@ -13,8 +13,8 @@ def import_data(companies, ratios):
         max_retries = 3
         while retry_count < max_retries:
             try:
-                print(f"📊 Récupération des ratios pour {company} ({symbol})...")
-                ticker = yf.Ticker(symbol)  # ✅ PAS de session
+                print(f"Récupération des ratios pour {company} ({symbol})...")
+                ticker = yf.Ticker(symbol)  # PAS de session
                 info = ticker.info
                 company_names.append(company)
 
@@ -45,7 +45,7 @@ def import_data(companies, ratios):
     # Création DataFrame et export
     df = pd.DataFrame(ratios, index=company_names)
     df.to_csv("ratios_compagnies.csv")
-    print("✅ Les ratios financiers ont été exportés vers 'ratios_compagnies.csv'.")
+    print("Les ratios financiers ont été exportés vers 'ratios_compagnies.csv'.")
 
 # Fonction pour récupérer les données historiques
 def scrapping_data(companies):
@@ -62,8 +62,8 @@ def scrapping_data(companies):
 
         while retry_count < max_retries and not success:
             try:
-                print(f"📈 Téléchargement des données historiques pour {company} ({symbol})...")
-                ticker = yf.Ticker(symbol)  # ✅ PAS de session
+                print(f"Téléchargement des données historiques pour {company} ({symbol})...")
+                ticker = yf.Ticker(symbol)  #PAS de session
                 data = ticker.history(start=start_date, end=end_date)
 
                 if data.empty or "Close" not in data.columns:
@@ -78,17 +78,17 @@ def scrapping_data(companies):
                 file_path = os.path.join(output_folder, f"{company}_historical_data.csv")
                 df.to_csv(file_path)
 
-                print(f"✅ Données exportées pour {company} ({symbol})")
+                print(f"Données exportées pour {company} ({symbol})")
                 success = True
                 time.sleep(2)
 
             except Exception as e:
                 wait_time = 2 ** retry_count
-                print(f"🚨 Erreur pour {company} ({symbol}) : {e} - nouvelle tentative dans {wait_time} s")
+                print(f"Erreur pour {company} ({symbol}) : {e} - nouvelle tentative dans {wait_time} s")
                 time.sleep(wait_time)
                 retry_count += 1
 
-    print("📁 Tous les fichiers ont été enregistrés dans le dossier 'Companies_historical_data'.")
+    print("Tous les fichiers ont été enregistrés dans le dossier 'Companies_historical_data'.")
 
 # Point d’entrée principal pour test (facultatif)
 if __name__ == "__main__":

@@ -117,7 +117,7 @@ def plot_comparison(df, sentiments_a, sentiments_b, timestamps, title_a, title_b
 
 # Fonction principale à lancer
 def run_analysis(company_ticker, model_a_path, model_b_path):
-    print(f"📊 Chargement des données boursières pour {company_ticker}...")
+    print(f"Chargement des données boursières pour {company_ticker}...")
     ticker = yf.Ticker(company_ticker)
     df = ticker.history(start="2025-01-01", interval="60m").reset_index()
 

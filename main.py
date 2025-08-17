@@ -4,15 +4,14 @@ from datetime import datetime, timedelta
 from statistics import mode
 import model_import
 
-# TPs importés
-import TP1
-import TP2
-import TP3
-import TP4
-import TP5
-import TP6
-import TP7
-import TP8
+import Data_Collection
+import Clustering
+import Classification
+import Regression
+import DL_Prediction
+import News_Collection
+import BERT
+import Sentiment_Analysis
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
@@ -48,7 +47,7 @@ def aggregate_recommendations(companies,
 
 
 def main():
-    # ---------- 1. Données brutes (TP1) ----------
+    # ---------- 1. Données brutes ----------
     ratios = {
         "forwardPE": [], "beta": [], "priceToBook": [], "priceToSales": [],
         "dividendYield": [], "trailingEps": [], "debtToEquity": [],
@@ -60,13 +59,13 @@ def main():
         "Alphabet": "GOOGL", "Meta": "META", "Tesla": "TSLA",
     }
 
-    TP1.import_data(companies, ratios)
-    TP1.scrapping_data(companies)
+    Data_Collection.import_data(companies, ratios)
+    Data_Collection.scrapping_data(companies)
 
-    # ---------- 2. Clustering (TP2) ----------
-    df_ratios = TP2.read_data("ratios_compagnies.csv")
-    df_perf, pc = TP2.preprocess_for_financial_clustering(df_ratios)
-    df_perf = TP2.do_kmeans_clustering(df_perf, pc)
+    # ---------- 2. Clustering ----------
+    df_ratios = Clustering.read_data("ratios_compagnies.csv")
+    df_perf, pc = Clustering.preprocess_for_financial_clustering(df_ratios)
+    df_perf = Clustering.do_kmeans_clustering(df_perf, pc)
     similar = {}
     for c in df_perf["company"].values:
         cl = df_perf.loc[df_perf["company"] == c, "Cluster"].iloc[0]
@@ -74,12 +73,12 @@ def main():
         group.remove(c)
         similar[c] = group
 
-    # ---------- 3. Classification BUY/HOLD/SELL (TP3) ----------
+    # ---------- 3. Classification BUY/HOLD/SELL ----------
     cls_signal = {}
     for comp in companies:
         path = os.path.join("Companies_historical_data", f"{comp}_historical_data.csv")
-        df = TP3.create_labels(path)
-        df = TP3.compute_features(df)
+        df = Classification.create_labels(path)
+        df = Classification.compute_features(df)
         drop = ['Label','Close_Horizon','Next Day Close','Rendement','Horizon_Return']
         feats = [col for col in df.columns if col not in drop and df[col].dtype != 'object']
         X, y = df[feats], df["Label"]
@@ -91,12 +90,12 @@ def main():
         clf.fit(X_tr, y_tr)
         cls_signal[comp] = int(clf.predict(X_last)[0])
 
-    # ---------- 4. Régression classique (TP4) ----------
+    # ---------- 4. Régression classique ----------
     reg_signal = {}
     for comp in companies:
         path = os.path.join("Companies_historical_data", f"{comp}_historical_data.csv")
-        x_tr, x_te, y_tr, y_te, scaler, close = TP4.load_and_prepare_data(path, n_days=30)
-        res = TP4.evaluate_model(
+        x_tr, x_te, y_tr, y_te, scaler, close = Regression.load_and_prepare_data(path, n_days=30)
+        res = Regression.evaluate_model(
             "XGBoost",
             XGBRegressor(objective='reg:squarederror'),
             {"max_depth": [3, 5], "n_estimators": [100, 200]},
@@ -105,29 +104,29 @@ def main():
         )
         reg_signal[comp] = res["RMSE"]
 
-    # ---------- 5. Modèles profonds (TP5) ----------
+    # ---------- 5. Modèles profonds ----------
     deep_learning_rmse = {}
     for comp in companies:
         path = os.path.join("Companies_historical_data", f"{comp}_historical_data.csv")
-        results = TP5.run_all_models(path)  # Retourne dict {"MLP": ..., "RNN": ..., "LSTM": ...}
+        results = DL_Prediction.run_all_models(path)  # Retourne dict {"MLP": ..., "RNN": ..., "LSTM": ...}
         deep_learning_rmse[comp] = results.get("LSTM", 9999)
 
-    # ---------- 6. Récupération des news (TP6) ----------
+    # ---------- 6. Récupération des news ----------
     for name, ticker in companies.items():
-        TP6.get_news_by_date(name, ticker, days=7)
+        News_Collection.get_news_by_date(name, ticker, days=7)
 
-    # ---------- 7. Fine-tuning des classifieurs (TP7) ----------
-    dataset = TP7.load_financial_datasets()
+    # ---------- 7. Fine-tuning des classifieurs ----------
+    dataset = BERT.load_financial_datasets()
     #TP7.train_model("bert-base-uncased", dataset, batch_size=16, num_epochs=2)
     #TP7.train_model("yiyanghkust/finbert-tone", dataset, batch_size=16, num_epochs=2)
 
-    # ---------- 8. Analyse de sentiment (TP8) ----------
+    # ---------- 8. Analyse de sentiment ----------
     sentiment_signal = {}
     news_headlines = {}
     for name, ticker in companies.items():
         json_path = os.path.join("news_data", f"{ticker}_news.json")
-        texts, _ = TP8.get_texts_timestamps(json_path)
-        sents = TP8.get_sentiments("yiyanghkust/finbert-tone", texts)
+        texts, _ = Sentiment_Analysis.get_texts_timestamps(json_path)
+        sents = Sentiment_Analysis.get_sentiments("yiyanghkust/finbert-tone", texts)
         sentiment_signal[name] = int(mode(sents)) if sents else 1
         news_headlines[name] = texts
 
@@ -154,7 +153,7 @@ def main():
     with open("recommendations.json", "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
 
-    print("✅ Pipeline terminée ! Résultats dans recommendations.json")
+    print("Pipeline terminée ! Résultats dans recommendations.json")
 
 
 if __name__ == "__main__":
