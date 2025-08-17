@@ -35,14 +35,4 @@ The system integrates traditional financial metrics, machine learning models, se
   - **SELL** if classifier and sentiment are negative, and LSTM outperforms XGBoost  
   - **HOLD** otherwise  
 
-## Technologies Used
-
-- Python 3  
-- Scikit-learn  
-- XGBoost  
-- TensorFlow / Keras (for LSTM models)  
-- Pandas, NumPy  
-- Matplotlib  
-
-## Project Structure
 
